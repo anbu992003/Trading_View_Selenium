@@ -21,6 +21,51 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 public class Trading_View {
 
+	private static boolean headless = true;
+	public static boolean startCrawling = true;
+	public static WebDriver chrome = null;
+	private static List<NSEScript> records = null;
+	private static String lastRecordSymbol = null;
+
+	// Nifty 50
+//	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty50list.csv";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.out";	
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report_retry.out";
+
+	// Nifty 500
+//	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty500list.csv";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty500_report.out";
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty500_report_retry.out";
+
+	// Portfolio
+//	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/portfolio.txt";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/portfolio_report.out";
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/portfolio_report_retry.out";
+
+	// Watchlist N500 Buy
+//	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.txt";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.out";
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy_retry.out";
+
+	// Watchlist - General
+	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist.txt";
+	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report.out";
+	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report_retry.out";
+
+	private static String chromeDriverLocation = "/Users/anbu/Downloads/chromedriver";
+	private static String screenshotLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/sel.png";
+	private static String htmlLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.html";
+	private static boolean retriedFlag = false;
+	private static List<NSEScript> retryRecords = new ArrayList<NSEScript>();
+	private static List<NSEScript> outRecords = new ArrayList<NSEScript>();
+
+	private static long sleepTime = 3000;
+	private static String buySpanStr = "//span[contains(@class, 'counterNumber-3l14ys0C-') and contains(@class, 'brandColor-1WP1oBmS-')]";
+	private static String sellSpanStr = "//span[contains(@class, 'counterNumber-3l14ys0C-') and contains(@class, 'redColor-Hpg7doOR-')]";
+	private static String snrClssNm = "itemContent-OyUxIzTS-";
+	private static String dySmCssStr = "div.summary-72Hk5lHE- span.speedometerSignal-pyzN--tL-";
+	private static String dySmXpathStr = "//*[@id=\"technicals-root\"]/div/div/div[2]/div[2]/span[2]";
+
 	private static class NSEScript {
 		private String companyName;
 		private String industry;
@@ -84,29 +129,6 @@ public class Trading_View {
 		}
 	}
 
-	private static boolean headless = true;
-	public static boolean startCrawling = true;
-	public static WebDriver chrome = null;
-	private static List<NSEScript> records = null;
-	private static String lastRecordSymbol = null;
-
-	// Nifty 50
-//	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty50list.csv";
-//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.out";	
-//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report_retry.out";
-
-	// Nifty 500
-	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty500list.csv";
-	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty500_report.out";
-	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty500_report_retry.out";
-
-	private static String chromeDriverLocation = "/Users/anbu/Downloads/chromedriver";
-	private static String screenshotLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/sel.png";
-	private static String htmlLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.html";
-	private static boolean retriedFlag = false;
-	private static List<NSEScript> retryRecords = new ArrayList<NSEScript>();
-	private static List<NSEScript> outRecords = new ArrayList<NSEScript>();
-
 	private static void config() throws Exception {
 		System.setProperty("webdriver.chrome.driver", chromeDriverLocation);
 
@@ -125,6 +147,8 @@ public class Trading_View {
 //		WebDriver chrome = new ChromeDriver();
 		chrome = new ChromeDriver(options);
 		chrome.manage().timeouts().implicitlyWait(timeout, SECONDS);
+
+		System.out.println("Configurations Completed!!!");
 	}
 
 	private static void crawlMainPage(NSEScript script) throws Exception {
@@ -135,7 +159,11 @@ public class Trading_View {
 
 		chrome.get(strUrl);
 		System.out.println("Title: " + chrome.getTitle());
-
+		if(chrome.getTitle().contains("Page Not Found"))
+		{			
+			throw new Exception("Page Not Found");
+		}
+		
 //		// Load page & take screenshot of full-screen page
 //		File scrFile = ((TakesScreenshot) chrome).getScreenshotAs(OutputType.FILE);
 //		FileUtils.copyFile(scrFile, new File("/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/sel.png"));
@@ -144,10 +172,8 @@ public class Trading_View {
 		// speedometerWrapper-1SNrYKXY- summary-72Hk5lHE-
 		// span class
 		// speedometerSignal-pyzN--tL- neutralColor-15OoMFX9-
-		String daySummary = chrome.findElement(By.cssSelector("div.summary-72Hk5lHE- span.speedometerSignal-pyzN--tL-"))
-				.getText();
-		String daySummary1 = chrome.findElement(By.xpath("//*[@id=\"technicals-root\"]/div/div/div[2]/div[2]/span[2]"))
-				.getText();
+		String daySummary = chrome.findElement(By.cssSelector(dySmCssStr)).getText();
+		String daySummary1 = chrome.findElement(By.xpath(dySmXpathStr)).getText();
 
 		System.out.println("Day Summary: " + daySummary);
 		System.out.println("Day Summary1: " + daySummary1);
@@ -165,7 +191,7 @@ public class Trading_View {
 		// 1 month
 		retriedFlag = false;
 		WebElement dayScenario = null;
-		List<WebElement> scenario = chrome.findElements(By.className("itemContent-OyUxIzTS-"));
+		List<WebElement> scenario = chrome.findElements(By.className(snrClssNm));
 		for (int i = 0; i < scenario.size(); i++) {
 
 //			System.out.println(scenario.get(i).getText());
@@ -181,16 +207,18 @@ public class Trading_View {
 			}
 		}
 
-		if (dayScenario != null && dayScenario.getText().contains("day")) {
+		if ((daySummary1 == null || daySummary1.trim().isEmpty())
+				&& (dayScenario != null && dayScenario.getText().contains("day"))) {
 			System.out.println("Day: ");
 			script.setDay(crawlNextPage(dayScenario, buyVal));
 		}
-		
+
 		System.out.println("OUT:\t" + script.getSymbol() + "," + script.getDay() + "," + script.getWeek() + ","
 				+ script.getMonth() + "\n");
 
 		if (retriedFlag) {
 			retryRecords.add(script);
+			outRecords.add(script);
 			retriedFlag = false;
 		} else {
 			outRecords.add(script);
@@ -234,19 +262,26 @@ public class Trading_View {
 
 		Integer buyVal = 0;
 //		List<WebElement> buySpans = chrome.findElements(By.className("span.counterNumber-3l14ys0C-.brandColor-1WP1oBmS-"));
-		List<WebElement> buySpans = chrome.findElements(By.xpath(
-				"//span[contains(@class, 'counterNumber-3l14ys0C-') and contains(@class, 'brandColor-1WP1oBmS-')]"));
+		List<WebElement> buySpans = chrome.findElements(By.xpath(buySpanStr));
+		List<WebElement> sellSpans = chrome.findElements(By.xpath(sellSpanStr));
 
 //		WebDriverWait wait = new WebDriverWait(chrome, 10);
 //		List<WebElement> buySpans  = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("span.counterNumber-3l14ys0C-.brandColor-1WP1oBmS-")));
 
+		// Summation of buy spans
 		for (int i = 0; i < buySpans.size(); i++) {
 			buyVal += Integer.parseInt(buySpans.get(i).getText());
 		}
-		
+
+		// Deletion of sell spans from buy spans
+		for (int i = 0; i < sellSpans.size(); i++) {
+			buyVal -= Integer.parseInt(sellSpans.get(i).getText());
+		}
+
 //		System.out.println("Count of Buy Value: " + buySpans.size());
 //		System.out.println("Updated Buy Value: " + buyVal);
 
+		jse.executeScript("window.scrollBy(0,-250)", "");
 		jse.executeScript("window.scrollBy(0,-250)", "");
 
 		return buyVal;
@@ -256,13 +291,13 @@ public class Trading_View {
 		element.click();
 
 //		String scenario = chrome.findElement(By.cssSelector("div.active-1jm_3h9d- div.active-1jm_3h9d-")).getText();
-		Thread.sleep(5000);
+		Thread.sleep(sleepTime);
 		Integer buyVal = getBuyValue();
 
 		int retryCount = 0;
 		while (buyVal.intValue() == cmpBuyVal.intValue() && retryCount < 3) {
 			System.out.println("Waiting for change in Buy value from " + buyVal.intValue() + " !!!...");
-			Thread.sleep(5000);
+			Thread.sleep(sleepTime);
 			buyVal = getBuyValue();
 			retryCount++;
 		}
@@ -306,7 +341,7 @@ public class Trading_View {
 				startCrawling = false;
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			System.err.println("Output file is not present: " + filename);
 		}
 
 		System.out.println("lastSymbol: " + lastSymbol);
@@ -315,22 +350,34 @@ public class Trading_View {
 
 	private static List<NSEScript> readFile(String filename) throws IOException {
 
-		FileReader fileReader = new FileReader(filename);
-
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		List<NSEScript> lines = new ArrayList<NSEScript>();
+		try {
+			FileReader fileReader = new FileReader(filename);
 
-		String line = null;
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-		while ((line = bufferedReader.readLine()) != null) {
-			if (line != null && !line.isEmpty() && !line.startsWith("Company")) {
-				String[] rec = line.split(",");
-				NSEScript scrip = new NSEScript(rec[0], rec[1], rec[2].replaceAll("&|-", "_"), rec[3], rec[4]);
-				lines.add(scrip);
+			String line = null;
+
+			while ((line = bufferedReader.readLine()) != null) {
+				if (line != null && !line.trim().isEmpty() && !line.startsWith("Company")) {
+
+//				System.out.println("Line: "+ line);				
+					String[] rec = line.split(",");
+
+//				for (int i = 0; i < rec.length; i++) {
+//					System.out.println("rec["+i+"] : " + rec[i]);
+//				}
+
+					NSEScript scrip = new NSEScript(rec[0], rec[1], rec[2].replaceAll("&|-", "_"), rec[3], rec[4]);
+					lines.add(scrip);
+				}
 			}
-		}
 
-		bufferedReader.close();
+			bufferedReader.close();
+		} catch (Exception ex) {
+			System.err.println("Failure reading inputFile: " + filename);
+			throw ex;
+		}
 
 		return lines;
 	}
@@ -369,7 +416,16 @@ public class Trading_View {
 				NSEScript nseScript = (NSEScript) iterator.next();
 
 				if (startCrawling) {
-					crawlMainPage(nseScript);
+					try
+					{
+						crawlMainPage(nseScript);
+					}
+					catch(Exception ex)
+					{
+						System.err.println(ex.getMessage());
+						System.err.println("ERROR: Processing " + nseScript.getSymbol());
+						retryRecords.add(nseScript);
+					}
 				} else if (lastRecordSymbol != null && !lastRecordSymbol.isEmpty()
 						&& lastRecordSymbol.equalsIgnoreCase(nseScript.getSymbol())) {
 					System.out.println(nseScript.getSymbol() + " - Ignored!!!");
@@ -386,7 +442,8 @@ public class Trading_View {
 
 			writeOutputFile(retryfilename, retryRecords);
 
-			chrome.quit();
+			if (chrome != null)
+				chrome.quit();
 		}
 
 	}
