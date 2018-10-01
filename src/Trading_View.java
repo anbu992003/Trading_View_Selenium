@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -29,8 +31,8 @@ public class Trading_View {
 
 	// Nifty 50
 //	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty50list.csv";
-//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.out";	
-//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report_retry.out";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty50_report.out";	
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty50_report_retry.out";
 
 	// Nifty 500
 //	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty500list.csv";
@@ -43,14 +45,14 @@ public class Trading_View {
 //	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/portfolio_report_retry.out";
 
 	// Watchlist N500 Buy
-//	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.txt";
-//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.out";
-//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy_retry.out";
+	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.txt";
+	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy.out";
+	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_Buy_retry.out";
 
 	// Watchlist - General
-	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist.txt";
-	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report.out";
-	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report_retry.out";
+//	private static String inputFileName = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist.txt";
+//	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report.out";
+//	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/Watchlist_report_retry.out";
 
 	private static String chromeDriverLocation = "/Users/anbu/Downloads/chromedriver";
 	private static String screenshotLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/sel.png";
@@ -400,8 +402,22 @@ public class Trading_View {
 			ex.printStackTrace();
 		}
 	}
+	
+	private static long getTimeStamp()
+	{
+		Date date = new Date();
+		Timestamp ts = new Timestamp(date.getTime());
+		System.out.println(ts);
+		long startTS = ts.getTime();
+        return startTS;
+	}
 
 	public static void main(String[] args) throws Exception {
+				
+		long startTS = getTimeStamp();
+        System.out.println("Start Time: " + startTS);
+
+		
 		try {
 
 			lastRecordSymbol = readLastRecordSymbol(outFilename);
@@ -444,6 +460,11 @@ public class Trading_View {
 
 			if (chrome != null)
 				chrome.quit();
+			
+			long endTS = getTimeStamp();
+	        System.out.println("End Time: " + endTS);
+	        System.out.println("Time Differnce(ms): " + (endTS - startTS));
+			
 		}
 
 	}
