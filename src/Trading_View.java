@@ -28,12 +28,14 @@ public class Trading_View {
 	public static WebDriver chrome = null;
 	private static List<NSEScript> records = null;
 	private static String lastRecordSymbol = null;
+	private static long totalCount = 0;
+	private static long currentCount = 0;
 	private static List<String> errorList = new ArrayList<String>();
 
 	private static boolean overwriteFlag = true;
 
 	// Nifty 50
-//	private static String inputFileName = "/Users/anbu/Downloads/ind_nifty50list.csv";
+//	private static String inputFileName = "/Users/anbu/Downloads/Text_files/ind_nifty50list.csv";
 //	private static String outFilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty50_report.out";
 //	private static String retryfilename = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/nifty50_report_retry.out";
 
@@ -59,8 +61,8 @@ public class Trading_View {
 
 	
 	private static String chromeDriverLocation = "/Users/anbu/Downloads/chromedriver";
-	private static String screenshotLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/sel.png";
-	private static String htmlLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/report.html";
+	private static String screenshotLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/debug_report.png";
+	private static String htmlLocation = "/Users/anbu/Downloads/phantomjs-2.1.1-macosx/work/trading_view/debug_report.html";
 	private static boolean retriedFlag = false;
 	private static List<NSEScript> retryRecords = new ArrayList<NSEScript>();
 	private static List<NSEScript> outRecords = new ArrayList<NSEScript>();
@@ -77,7 +79,18 @@ public class Trading_View {
 	private static String camarillaS3XpathStr="//*[@id=\"technicals-root\"]/div/div/table/tbody/tr[2]/td[4]";
 	private static String camarillaR3XpathStr="//*[@id=\"technicals-root\"]/div/div/table/tbody/tr[8]/td[4]";
 	
-
+	private static String cmpCssStr = "span.tv-symbol-header-quote__value--large"; //.js-symbol-last
+	private static String peCssStr = "span.js-symbol-pe";
+	private static String epsCssStr = "span.js-symbol-eps";
+	private static String divYCssStr = "span.js-symbol-dividends";
+	private static String cmpXpathStr = "//*[@id=\"anchor-page-1\"]/div/div[3]/div/div[1]/div[1]/span[1]";		
+	private static String peXpathStr = "//*[@id=\"anchor-page-1\"]/div/div[3]/div/div[2]/div[7]/span";
+	private static String epsXpathStr = "//*[@id=\"anchor-page-1\"]/div/div[3]/div/div[2]/div[5]/span";
+	private static String divYXpathStr = "//*[@id=\"anchor-page-1\"]/div/div[3]/div/div[2]/div[8]/span";
+	private static String mktCapXpathStr = "//*[@id=\"anchor-page-1\"]/div/div[3]/div/div[2]/div[6]/span";
+	private static String allLowXpathStr = "/html/body/div[1]/div/div[1]/div[1]/div[1]/div[2]/div[2]/div/div[1]/div[3]/div[2]";
+    private static String allHighXpathStr = "/html/body/div[1]/div/div[1]/div[1]/div[1]/div[2]/div[2]/div/div[1]/div[3]/div[3]";
+	
 	private static class NSEScript {
 		private String companyName;
 		private String industry;
@@ -89,6 +102,14 @@ public class Trading_View {
 		private String month;
 		private String resistance;
 		private String support;
+		private String pe;
+		private String eps;
+		private String cmp;
+		private String divy;
+		private String mktCap;
+		private String trigger;
+		private String allLow;
+		private String allHigh;
 
 		public NSEScript(String companyName, String industry, String symbol, String series, String isin) {
 			this.companyName = companyName;
@@ -97,7 +118,76 @@ public class Trading_View {
 			this.series = series;
 			this.isin = isin;
 		}
+		
+		public String getTrigger() {
+			return trigger;
+		}
+		
+		public void setTrigger(String trigger) {
+			this.trigger = trigger;
+		}
+		
+		
+		public void setPE(String pe) {
+			this.pe = pe;
+		}
+		
+		public void setEPS(String eps) {
+			this.eps = eps;
+		}
 
+		public void setCMP(String cmp) {
+			this.cmp = cmp;
+		}
+		
+		public void setDIVY(String divy) {
+			this.divy = divy;
+		}
+		
+		public void setAllLow(String allLow)
+		{			
+			this.allLow = allLow;
+		}
+		
+		public void setAllHigh(String allHigh)
+		{			
+			this.allHigh = allHigh;
+		}
+		
+		public String getAllLow() {
+			return allLow;
+		}
+		
+		public String getAllHigh() {
+			return allHigh;
+		}
+		
+		
+		public void setMktCap(String mktCap)
+		{			
+			this.mktCap = mktCap;
+		}
+		
+		public String getMktCap() {
+			return mktCap;
+		}
+		
+		public String getPE() {
+			return pe;
+		}
+		
+		public String getEPS() {
+			return eps;
+		}
+
+		public String getCMP() {
+			return cmp;
+		}
+		
+		public String getDIVY() {
+			return divy;
+		}
+		
 		public String getResistance() {
 			return resistance;
 		}
@@ -187,13 +277,16 @@ public class Trading_View {
 //		String strUrl = "https://in.tradingview.com/symbols/NSE-NRBBEARING/technicals/";
 		String strUrl = "https://in.tradingview.com/symbols/NSE-" + script.getSymbol() + "/technicals/";
 
-		System.out.println("URL: " + strUrl);
+		currentCount++;
+		System.out.println(currentCount + "/" + totalCount + " - URL: " + strUrl);
 
 		chrome.get(strUrl);
 		System.out.println("Title: " + chrome.getTitle());
 		if (chrome.getTitle().contains("Page Not Found")) {
 			throw new Exception("Page Not Found");
 		}
+		
+		Thread.sleep(sleepTime);
 
 //		// Load page & take screenshot of full-screen page
 //		File scrFile = ((TakesScreenshot) chrome).getScreenshotAs(OutputType.FILE);
@@ -209,13 +302,56 @@ public class Trading_View {
 		//Camarilla Support & Resistance data		
 		String camS3 = chrome.findElement(By.xpath(camarillaS3XpathStr)).getText();
 		String camR3 = chrome.findElement(By.xpath(camarillaR3XpathStr)).getText();
+		String cmp1 = chrome.findElement(By.cssSelector(cmpCssStr)).getText();
+		String cmp = chrome.findElement(By.xpath(cmpXpathStr)).getText();
+		String eps = chrome.findElement(By.xpath(epsXpathStr)).getText();
+		String pe = chrome.findElement(By.xpath(peXpathStr)).getText();
+		String divy = chrome.findElement(By.xpath(divYXpathStr)).getText();
+		String mktCap = chrome.findElement(By.xpath(mktCapXpathStr)).getText();
+//		String allLow = chrome.findElement(By.xpath(allLowXpathStr)).getText();
+//		String allHigh = chrome.findElement(By.xpath(allHighXpathStr)).getText();
+		
 		
 //		System.out.println("Day Summary: " + daySummary);
 		System.out.println("Day Summary1: " + daySummary1 + "\tResistance: " + camR3 + "\tSupport: " + camS3);
+		System.out.println("CMP1: " + cmp1 + "\tCMP: " + cmp + "\tEPS: " + eps + "\tPE: " + pe + "\tDIVY%: "+ divy);
 		script.setDay(daySummary1);
 		script.setResistance(camR3);
 		script.setSupport(camS3);
-
+		script.setCMP(cmp);
+		script.setEPS(eps);
+		script.setPE(pe);
+		script.setDIVY(divy);
+		script.setMktCap(mktCap);
+//		script.setAllLow(allLow);
+//		script.setAllHigh(allHigh);
+		
+		try
+		{
+			Double dblCMP = Double.parseDouble(cmp);
+			Double dblS3 = Double.parseDouble(camS3);
+			Double dblR3 = Double.parseDouble(camR3);
+			
+			if(dblCMP <= dblS3)
+			{
+				script.setTrigger("SELL");
+			}
+			else if(dblCMP >=dblR3)
+			{
+				script.setTrigger("BUY");
+			}
+			else
+			{
+				script.setTrigger("NEUTRAL");
+			}
+			
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		
 		// Buy
 		// Spans
 		// brandColor-1WP1oBmS-
@@ -278,6 +414,7 @@ public class Trading_View {
 
 		try {
 
+			System.out.println("SCREENSHOT: " + screenshotLocation);
 			File scrFile = ((TakesScreenshot) chrome).getScreenshotAs(OutputType.FILE);
 			FileUtils.copyFile(scrFile, new File(screenshotLocation));
 		} catch (Exception ex) {
@@ -292,7 +429,7 @@ public class Trading_View {
 			File f = new File(htmlLocation);
 			FileWriter writer = new FileWriter(f, true);
 			writer.write(stored_report);
-			System.out.println("Report Created is in Location : " + f.getAbsolutePath());
+			System.out.println("HTML Report Created is in Location : " + f.getAbsolutePath());
 			writer.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -447,7 +584,25 @@ public class Trading_View {
 			for (Iterator iterator = records.iterator(); iterator.hasNext();) {
 				NSEScript nseScript = (NSEScript) iterator.next();
 				writer.write(nseScript.getSymbol() + SEP_COMMA + nseScript.getDay() + SEP_COMMA + nseScript.getWeek() + SEP_COMMA
-						+ nseScript.getMonth() + SEP_COMMA +  nseScript.getSupport() + SEP_COMMA + nseScript.getResistance() + "\n");
+						+ nseScript.getMonth() + SEP_COMMA +  nseScript.getSupport() + SEP_COMMA + nseScript.getResistance());
+				
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getMktCap());
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getCMP());
+//				writer.write(SEP_COMMA);
+//				writer.write(nseScript.getAllLow());
+//				writer.write(SEP_COMMA);
+//				writer.write(nseScript.getAllHigh());
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getEPS());
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getPE());
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getDIVY());
+				writer.write(SEP_COMMA);
+				writer.write(nseScript.getTrigger());
+				writer.write("\n");
 			}
 
 			System.out.println("Report Created is in Location : " + f.getAbsolutePath());
@@ -486,7 +641,8 @@ public class Trading_View {
 
 //Read NSE scripts		
 			records = readFile(inputFileName);
-			System.out.println("Total NSEScripts to process: " + records.size());
+			totalCount = records.size();
+			System.out.println("Total NSEScripts to process: " + totalCount);
 
 //Crawl 		
 			config();
@@ -501,6 +657,11 @@ public class Trading_View {
 						System.err.println("ERROR: Processing " + nseScript.getSymbol());
 						errorList.add(nseScript.getSymbol());
 						retryRecords.add(nseScript);
+						
+//						DEBUG		
+						writeHtml();
+						saveScreenshot();
+
 					}
 				} else if (lastRecordSymbol != null && !lastRecordSymbol.isEmpty()
 						&& lastRecordSymbol.equalsIgnoreCase(nseScript.getSymbol())) {
