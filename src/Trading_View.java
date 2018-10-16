@@ -92,24 +92,24 @@ public class Trading_View {
     private static String allHighXpathStr = "/html/body/div[1]/div/div[1]/div[1]/div[1]/div[2]/div[2]/div/div[1]/div[3]/div[3]";
 	
 	private static class NSEScript {
-		private String companyName;
-		private String industry;
-		private String symbol;
-		private String series;
-		private String isin;
-		private String day;
-		private String week;
-		private String month;
-		private String resistance;
-		private String support;
-		private String pe;
-		private String eps;
-		private String cmp;
-		private String divy;
-		private String mktCap;
-		private String trigger;
-		private String allLow;
-		private String allHigh;
+		private String companyName = "";
+		private String industry = "";
+		private String symbol = "";
+		private String series = "";
+		private String isin = "";
+		private String day = "";
+		private String week = "";
+		private String month = "";
+		private String resistance = "";
+		private String support = "";
+		private String pe = "";
+		private String eps = "";
+		private String cmp = "";
+		private String divy = "";
+		private String mktCap = "";
+		private String trigger = "";
+		private String allLow = "";
+		private String allHigh = "";
 
 		public NSEScript(String companyName, String industry, String symbol, String series, String isin) {
 			this.companyName = companyName;
@@ -605,6 +605,8 @@ public class Trading_View {
 				writer.write("\n");
 			}
 
+			writer.flush();
+			
 			System.out.println("Report Created is in Location : " + f.getAbsolutePath());
 			writer.close();
 		} catch (Exception ex) {
